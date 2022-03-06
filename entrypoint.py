@@ -32,6 +32,36 @@ def p_stdout(*msg: str):
     "\n".join([f"{m}" for m in msg]),
   )
 
+def parse_duration(dur: str) -> float:
+  try:
+    return int(dur)
+  except ValueError:
+    pass
+
+  hours = minutes = seconds = 0
+  if "h" in dur:
+    try:
+      hours, dur = dur.split("h", maxsplit=1)
+    except TypeError:
+      pass
+  if "m" in dur:
+    try:
+      minutes, dur = dur.split("m", maxsplit=1)
+    except TypeError:
+      pass
+  if "s" in dur:
+    seconds, dur = dur.split("s", maxsplit=1)
+    if dur != "":
+      raise ValueError(dur)
+  
+  return int(hours) * 3600 + int(minutes) * 60 + int(seconds)
+
+def parse_fps(fps: str) -> float:
+  try:
+    return float(fps)
+  except:
+    return float(fps.split("fps", maxsplit=1)[0])
+
 async def create_ffmpeg_async_proc(
   input_video: str,
   *output_filters: str,
@@ -453,6 +483,7 @@ async def time_it_generic(
 
 async def main(
   input_video: str,
+  duration: int,
   *all_target_fps: int,
 ):
   ### Get Input File Data ###
@@ -562,6 +593,7 @@ if __name__ == "__main__":
   asyncio.run(
     main(
       sys.argv[1],
-      *[float(fps) for fps in sys.argv[2:]],
+      parse_duration(sys.argv[2]),
+      *[parse_fps(fps) for fps in sys.argv[3:]],
     )
   )
