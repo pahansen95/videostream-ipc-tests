@@ -2,8 +2,6 @@
 
 set -Eeuo pipefail
 
-export NO_LOG=1
-
 docker build \
   -t rtsp-test \
   . \
@@ -18,6 +16,6 @@ docker build \
     rtsp-test \
       ./entrypoint.py \
         ./video.mp4 \
-          60s \
+          "${1:-60s}" \
           25fps 20fps 15fps 10fps 5fps 1fps 
 } | tee ./results.txt
