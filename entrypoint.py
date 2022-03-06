@@ -268,224 +268,230 @@ async def time_it_generic(
   expected_byte_size: int,
   read_chunk_size: int,
 ):
-  ### Setup ###
+  try:
+    if conn_type not in set(item.value for item in ConnType):
+      raise ValueError(conn_type)
 
-  output: Dict[str, Dict] = {
-    "blocking": {},
-    "non-blocking": {},
-    "asyncio": {},
-  }
+    ### Setup ###
 
-  ffmpeg_filters = [v for v in ["-vf", f"{fps}"] if fps]
-  ffmpeg_cmd = "ffmpeg"
-  common_ffmpeg_args = [
-    "-loglevel", "error",
-    "-stream_loop", "-1", # Loop Forever
-    "-re",  # Read input at the native frame rate
-    "-i", input_video,
-    "-f", "rawvideo",
-    "-c:v", "rawvideo",
-    "-pix_fmt", "rgb24",
-    *ffmpeg_filters,
-  ]
-  log(" ".join([ffmpeg_cmd, *common_ffmpeg_args]))
+    output: Dict[str, Dict] = {
+      "blocking": {},
+      "non-blocking": {},
+      "asyncio": {},
+    }
 
-  ### Blocking ###
-
-  if conn_type == ConnType.PIPELINE:
-    read_fd, write_fd = os.pipe()
-    os.set_blocking(read_fd, True)
-    os.set_inheritable(write_fd, True)
-    _pass_fds = (write_fd,)
-    ffmpeg_output = f"pipe:{write_fd}"
-    read_file = open(read_fd, mode='rb')
-    read_bytes = partial(read_file.read, read_chunk_size)
-    close_it = read_file.close
-  elif conn_type == ConnType.UNIX_SOCKET:
-    socket_addr = f"/tmp/{time.monotonic_ns()}.unix"
-    server_socket = socket.socket(
-      family=socket.AF_UNIX,
-      type=socket.SOCK_STREAM,
-    )
-    server_socket.bind(socket_addr)
-    server_socket.listen()
-    _pass_fds = ()
-    ffmpeg_output = [
-      f"unix://{socket_addr}",
+    ffmpeg_filters = [v for v in ["-vf", f"{fps}"] if fps]
+    ffmpeg_cmd = "ffmpeg"
+    common_ffmpeg_args = [
+      "-loglevel", "error",
+      "-stream_loop", "-1", # Loop Forever
+      "-re",  # Read input at the native frame rate
+      "-i", input_video,
+      "-f", "rawvideo",
+      "-c:v", "rawvideo",
+      "-pix_fmt", "rgb24",
+      *ffmpeg_filters,
     ]
-  else:
-    raise TypeError(conn_type)
 
-  # Create the Popen Process
-  ffmpeg_proc = subprocess.Popen(
-    args=[ffmpeg_cmd, *common_ffmpeg_args, ffmpeg_output],
-    stdout=subprocess.DEVNULL,
-    stderr=subprocess.PIPE,
-    pass_fds=_pass_fds,
-  )
+    ### Blocking ###
 
-  if conn_type == ConnType.UNIX_SOCKET:
-    # Accept the connection
-    client_socket, _ = server_socket.accept()
-    client_socket.setblocking(True)
-    read_bytes = partial(client_socket.recv, read_chunk_size)
-    close_it = client_socket.close
-  
-  try:
-    assert ffmpeg_proc.poll() is None, f"{ffmpeg_proc.returncode}"
-  except:
-    log(ffmpeg_proc.stderr.read().decode())
-  
-  total_bytes_read: int = 0
-  total_time_read: int = 0
-  while True:
-    time_datum = time.monotonic_ns()
-    _bytes = read_bytes()
-    total_time_read += time.monotonic_ns() - time_datum
-    total_bytes_read += len(_bytes)
-    if total_bytes_read >= expected_byte_size:
-      break
-  
-  if ffmpeg_proc.poll() is None:
-    ffmpeg_proc.terminate()
-    ffmpeg_proc.wait()
-  try:
-    assert not ffmpeg_proc.poll(), f"{ffmpeg_proc.returncode}"
-  except:
-    log(ffmpeg_proc.stderr.read().decode())
+    if conn_type == ConnType.PIPELINE:
+      read_fd, write_fd = os.pipe()
+      os.set_blocking(read_fd, True)
+      os.set_inheritable(write_fd, True)
+      _pass_fds = (write_fd,)
+      ffmpeg_output = f"pipe:{write_fd}"
+      read_file = open(read_fd, mode='rb')
+      read_bytes = partial(read_file.read, read_chunk_size)
+      close_it = read_file.close
+    elif conn_type == ConnType.UNIX_SOCKET:
+      socket_addr = f"/tmp/{time.monotonic_ns()}.unix"
+      server_socket = socket.socket(
+        family=socket.AF_UNIX,
+        type=socket.SOCK_STREAM,
+      )
+      server_socket.bind(socket_addr)
+      server_socket.listen()
+      log("Unix Socket Server Listening")
+      _pass_fds = ()
+      ffmpeg_output = f"unix://{socket_addr}"
 
-  close_it()
-
-  output["blocking"] = {
-    "bytes_read": total_bytes_read,
-    "reading_time": total_time_read,
-  }
-
-  ### Non-Blocking ###
-  
-  """
-  A Note to myself...
-    I'm just blocking until data can be written again.
-    Not really useful here but if background tasks needed to be done
-      this allows for asynchronous work
-  """
-  log(
-    f"{select.POLLIN=}",
-    f"{select.POLLPRI=}",
-    f"{select.POLLOUT=}",
-    f"{select.POLLERR=}",
-    f"{select.POLLHUP=}",
-    f"{select.POLLRDHUP=}",
-    f"{select.POLLNVAL=}",
-    f"{select.POLLMSG=}",
-  )
-
-  poll = select.poll()
-  if conn_type == ConnType.PIPELINE:
-    # See O_NONBLOCK information see -> https://man7.org/linux/man-pages/man2/open.2.html
-    # For Polling information see -> https://man7.org/linux/man-pages/man2/poll.2.html
-    read_fd, write_fd = os.pipe()
-    os.set_blocking(read_fd, False)
-    os.set_inheritable(write_fd, True)
-    poll.register(read_fd, select.POLLIN | select.POLLPRI)
-    read_file = open(read_fd, mode='rb')
-    read_bytes = partial(read_file.read, read_chunk_size)
-    close_it = read_file.close
-    ffmpeg_output = f"pipe:{write_fd}"
-    _pass_fds = (write_fd,)
-  elif conn_type == ConnType.UNIX_SOCKET:
-    socket_addr = f"/tmp/{time.monotonic_ns()}.unix"
-    server_socket = socket.socket(
-      family=socket.AF_UNIX,
-      type=socket.SOCK_STREAM,
+    # Create the Popen Process
+    ffmpeg_args = [ffmpeg_cmd, *common_ffmpeg_args, ffmpeg_output]
+    log(" ".join(ffmpeg_args))
+    ffmpeg_proc = subprocess.Popen(
+      args=ffmpeg_args,
+      stdout=subprocess.DEVNULL,
+      stderr=subprocess.PIPE,
+      pass_fds=_pass_fds,
     )
-    server_socket.bind(socket_addr)
-    server_socket.listen()
-    _pass_fds = ()
-    ffmpeg_output = [
-      f"unix://{socket_addr}",
-    ]
-  else:
-    raise TypeError(conn_type)
 
-  # Create the Popen Process
-  ffmpeg_proc = subprocess.Popen(
-    args=[ffmpeg_cmd, *common_ffmpeg_args, ffmpeg_output],
-    stdout=subprocess.DEVNULL,
-    stderr=subprocess.PIPE,
-    pass_fds=_pass_fds,
-  )
-  
-  try:
-    assert ffmpeg_proc.poll() is None, f"{ffmpeg_proc.returncode}"
-  except:
-    log(ffmpeg_proc.stderr.read().decode())
+    try:
+      assert ffmpeg_proc.poll() is None, f"{ffmpeg_proc.returncode}"
+    except:
+      log(ffmpeg_proc.stderr.read().decode())
 
-  data_available_bits = {select.POLLIN, select.POLLPRI}
-  peer_closed_bit = {select.POLLHUP,}
-  eof_flag = True  
-  total_bytes_read: int = 0
-  total_time_read: int = 0
-  while True:
-    poll_results = poll.poll()
-    if poll_results:
-      # log(f"{poll_results=}")
-      if poll_results[0][1] in data_available_bits:
-        # log(f"data available")
-        time_datum = time.monotonic_ns()
-        _bytes = read_bytes()
-        end_time = time.monotonic_ns()
-        if len(_bytes) > 0:
-          # log(f"{len(_bytes)=}")
-          total_bytes_read += len(_bytes)
-          total_time_read += end_time - time_datum
-          if total_bytes_read >= expected_byte_size:
-            # log("All Bytes Read")
-            break
-        else:
+    if conn_type == ConnType.UNIX_SOCKET:
+      # Accept the connection
+      log("Unix Socket Serving Accepting a Connection")
+      client_socket, _ = server_socket.accept()
+      client_socket.setblocking(True)
+      read_bytes = partial(client_socket.recv, read_chunk_size)
+      close_it = client_socket.close
+        
+    total_bytes_read: int = 0
+    total_time_read: int = 0
+    while True:
+      time_datum = time.monotonic_ns()
+      _bytes = read_bytes()
+      total_time_read += time.monotonic_ns() - time_datum
+      total_bytes_read += len(_bytes)
+      if total_bytes_read >= expected_byte_size:
+        break
+    
+    if ffmpeg_proc.poll() is None:
+      ffmpeg_proc.terminate()
+      ffmpeg_proc.wait()
+    try:
+      assert not ffmpeg_proc.poll(), f"{ffmpeg_proc.returncode}"
+    except:
+      log(ffmpeg_proc.stderr.read().decode())
+
+    close_it()
+
+    output["blocking"] = {
+      "bytes_read": total_bytes_read,
+      "reading_time": total_time_read,
+    }
+
+    ### Non-Blocking ###
+    
+    """
+    A Note to myself...
+      I'm just blocking until data can be written again.
+      Not really useful here but if background tasks needed to be done
+        this allows for asynchronous work
+    """
+    log(
+      f"{select.POLLIN=}",
+      f"{select.POLLPRI=}",
+      f"{select.POLLOUT=}",
+      f"{select.POLLERR=}",
+      f"{select.POLLHUP=}",
+      f"{select.POLLRDHUP=}",
+      f"{select.POLLNVAL=}",
+      f"{select.POLLMSG=}",
+    )
+
+    poll = select.poll()
+
+    if conn_type == ConnType.PIPELINE:
+      # See O_NONBLOCK information see -> https://man7.org/linux/man-pages/man2/open.2.html
+      # For Polling information see -> https://man7.org/linux/man-pages/man2/poll.2.html
+      read_fd, write_fd = os.pipe()
+      os.set_blocking(read_fd, False)
+      os.set_inheritable(write_fd, True)
+      poll.register(read_fd, select.POLLIN | select.POLLPRI)
+      read_file = open(read_fd, mode='rb')
+      read_bytes = partial(read_file.read, read_chunk_size)
+      close_it = read_file.close
+      ffmpeg_output = f"pipe:{write_fd}"
+      _pass_fds = (write_fd,)
+
+    # Create the Popen Process
+    ffmpeg_args = [ffmpeg_cmd, *common_ffmpeg_args, ffmpeg_output]
+    log(" ".join(ffmpeg_args))
+    ffmpeg_proc = subprocess.Popen(
+      args=ffmpeg_args,
+      stdout=subprocess.DEVNULL,
+      stderr=subprocess.PIPE,
+      pass_fds=_pass_fds,
+    )
+
+    try:
+      assert ffmpeg_proc.poll() is None, f"{ffmpeg_proc.returncode}"
+    except:
+      log(ffmpeg_proc.stderr.read().decode())
+
+    if conn_type == ConnType.UNIX_SOCKET:
+      # Server is already set up so just accept a new connection
+      log("Unix Socket Serving Accepting a Connection")
+      client_socket, _ = server_socket.accept()
+      client_socket.setblocking(False)
+      poll.register(client_socket, select.POLLIN | select.POLLPRI)
+      read_bytes = partial(client_socket.recv, read_chunk_size)
+      close_it = client_socket.close
+    
+    data_available_bits = {select.POLLIN, select.POLLPRI}
+    peer_closed_bit = {select.POLLHUP,}
+    eof_flag = True  
+    total_bytes_read: int = 0
+    total_time_read: int = 0
+    while True:
+      poll_results = poll.poll()
+      if poll_results:
+        # log(f"{poll_results=}")
+        if poll_results[0][1] in data_available_bits:
+          # log(f"data available")
+          time_datum = time.monotonic_ns()
+          _bytes = read_bytes()
+          end_time = time.monotonic_ns()
+          if len(_bytes) > 0:
+            # log(f"{len(_bytes)=}")
+            total_bytes_read += len(_bytes)
+            total_time_read += end_time - time_datum
+            if total_bytes_read >= expected_byte_size:
+              # log("All Bytes Read")
+              break
+          else:
+            if eof_flag:
+              break
+            else:
+              eof_flag = True
+          # else pass
+        elif poll_results[0][1] in peer_closed_bit:
+          # (for a pipe) peer closed it's end
           if eof_flag:
             break
           else:
             eof_flag = True
-        # else pass
-      elif poll_results[0][1] in peer_closed_bit:
-        # (for a pipe) peer closed it's end
-        if eof_flag:
-          break
         else:
-          eof_flag = True
+          raise RuntimeError(poll_results[0][1])
       else:
-        raise RuntimeError(poll_results[0][1])
-    else:
-      # log("No Poll Results")
-      continue
+        # log("No Poll Results")
+        continue
 
-  if ffmpeg_proc.poll() is None:
-    ffmpeg_proc.terminate()
-    ffmpeg_proc.wait()
-  try:
-    assert not ffmpeg_proc.poll(), f"{ffmpeg_proc.returncode}"
-  except:
-    log(ffmpeg_proc.stderr.read().decode())
+    if ffmpeg_proc.poll() is None:
+      ffmpeg_proc.terminate()
+      ffmpeg_proc.wait()
+    try:
+      assert not ffmpeg_proc.poll(), f"{ffmpeg_proc.returncode}"
+    except:
+      log(ffmpeg_proc.stderr.read().decode())
 
-  close_it()
+    close_it()
 
-  output["non-blocking"] = {
-    "bytes_read": total_bytes_read,
-    "reading_time": total_time_read,
-  }
+    output["non-blocking"] = {
+      "bytes_read": total_bytes_read,
+      "reading_time": total_time_read,
+    }
 
-  ### Async ###
-  # TODO
-  pass
-  
-  return output  
+    ### Async ###
+    # TODO
+    pass
+    
+    return output
+  finally:
+    # Cleanup
+    if conn_type == ConnType.UNIX_SOCKET:
+      server_socket.close()
 
 async def main(
   input_video: str,
   duration: int,
   *all_target_fps: int,
 ):
+  log(duration)
   ### Get Input File Data ###
   video_info = probe_video_for_info(
     input_video
@@ -500,8 +506,6 @@ async def main(
   _num, _denom = video_info["r_frame_rate"].split("/")
   fps = float(_num) / float(_denom)
   log(fps)
-  duration = 30
-  log(duration)
   chunk_size = 2**12 # 4096 Bytes (4KiB)
   log(chunk_size)
 
@@ -584,6 +588,28 @@ async def main(
       "  Non-Blocking:",
       f"    Actual Bytes Read:    {results['pipeline']['non-blocking']['bytes_read'] / 2**20:.2f}Mib",
       f"    Total Time Reading:   {results['pipeline']['non-blocking']['reading_time'] / 1E9:.2f}s",
+      "  Asyncio:",
+      "    N/A",
+      "\n",
+    )
+    p_stdout(
+      "\nUnix Socket Tests"
+    )
+    results["unix_socket"] = await time_it_generic(
+      input_video,
+      0, # Unfiltered
+      ConnType.UNIX_SOCKET,
+      total_byte_size,
+      chunk_size,
+    )
+
+    p_stdout(
+      "  Blocking:",
+      f"    Actual Bytes Read:    {results['unix_socket']['blocking']['bytes_read'] / 2**20:.2f}Mib",
+      f"    Total Time Reading:   {results['unix_socket']['blocking']['reading_time'] / 1E9:.2f}s",
+      "  Non-Blocking:",
+      f"    Actual Bytes Read:    {results['unix_socket']['non-blocking']['bytes_read'] / 2**20:.2f}Mib",
+      f"    Total Time Reading:   {results['unix_socket']['non-blocking']['reading_time'] / 1E9:.2f}s",
       "  Asyncio:",
       "    N/A",
       "\n",
