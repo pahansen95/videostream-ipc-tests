@@ -15,16 +15,28 @@ Video Info
 Profiling Info
   Bytes Per Chunk             4096 B
   Target Byte Rate            711.20 MiB/s
-  Target Bytes Read           21333.69MiB
-  Calculated Read Time        30.00s
+  Target Bytes Read           42667.38MiB
+  Calculated Read Time        59.99s
 
 Pipeline Tests
   Blocking:
-    Actual Bytes Read:    21333.69Mib
-    Total Time Reading:   80.30s
+    Actual Bytes Read:    42667.38Mib
+    Total Time Reading:   76.11s
   Non-Blocking:
-    Actual Bytes Read:    21333.69Mib
-    Total Time Reading:   64.92s
+    Actual Bytes Read:    42667.38Mib
+    Total Time Reading:   44.98s
+  Asyncio:
+    N/A
+
+
+
+Unix Socket Tests
+  Blocking:
+    Actual Bytes Read:    42667.38Mib
+    Total Time Reading:   162.97s
+  Non-Blocking:
+    Actual Bytes Read:    42667.38Mib
+    Total Time Reading:   133.20s
   Asyncio:
     N/A
 
@@ -36,16 +48,28 @@ Pipeline Tests
 Profiling Info
   Bytes Per Chunk             4096 B
   Target Byte Rate            593.26 MiB/s
-  Target Bytes Read           17797.85MiB
-  Calculated Read Time        30.00s
+  Target Bytes Read           35595.70MiB
+  Calculated Read Time        60.00s
 
 Pipeline Tests
   Blocking:
-    Actual Bytes Read:    17797.85Mib
-    Total Time Reading:   65.31s
+    Actual Bytes Read:    35595.70Mib
+    Total Time Reading:   60.16s
   Non-Blocking:
-    Actual Bytes Read:    17797.85Mib
-    Total Time Reading:   53.38s
+    Actual Bytes Read:    35595.70Mib
+    Total Time Reading:   35.68s
+  Asyncio:
+    N/A
+
+
+
+Unix Socket Tests
+  Blocking:
+    Actual Bytes Read:    35595.70Mib
+    Total Time Reading:   136.12s
+  Non-Blocking:
+    Actual Bytes Read:    35595.70Mib
+    Total Time Reading:   111.39s
   Asyncio:
     N/A
 
@@ -57,16 +81,28 @@ Pipeline Tests
 Profiling Info
   Bytes Per Chunk             4096 B
   Target Byte Rate            474.61 MiB/s
-  Target Bytes Read           14238.28MiB
-  Calculated Read Time        30.00s
+  Target Bytes Read           28476.56MiB
+  Calculated Read Time        60.00s
 
 Pipeline Tests
   Blocking:
-    Actual Bytes Read:    14238.28Mib
-    Total Time Reading:   52.70s
+    Actual Bytes Read:    28476.56Mib
+    Total Time Reading:   52.38s
   Non-Blocking:
-    Actual Bytes Read:    14238.28Mib
-    Total Time Reading:   42.36s
+    Actual Bytes Read:    28476.56Mib
+    Total Time Reading:   29.76s
+  Asyncio:
+    N/A
+
+
+
+Unix Socket Tests
+  Blocking:
+    Actual Bytes Read:    28476.56Mib
+    Total Time Reading:   109.86s
+  Non-Blocking:
+    Actual Bytes Read:    28476.56Mib
+    Total Time Reading:   88.32s
   Asyncio:
     N/A
 
@@ -78,16 +114,28 @@ Pipeline Tests
 Profiling Info
   Bytes Per Chunk             4096 B
   Target Byte Rate            355.96 MiB/s
-  Target Bytes Read           10678.71MiB
-  Calculated Read Time        30.00s
+  Target Bytes Read           21357.42MiB
+  Calculated Read Time        60.00s
 
 Pipeline Tests
   Blocking:
-    Actual Bytes Read:    10678.71Mib
-    Total Time Reading:   38.79s
+    Actual Bytes Read:    21357.42Mib
+    Total Time Reading:   37.13s
   Non-Blocking:
-    Actual Bytes Read:    10678.71Mib
-    Total Time Reading:   31.60s
+    Actual Bytes Read:    21357.42Mib
+    Total Time Reading:   21.88s
+  Asyncio:
+    N/A
+
+
+
+Unix Socket Tests
+  Blocking:
+    Actual Bytes Read:    21357.42Mib
+    Total Time Reading:   80.08s
+  Non-Blocking:
+    Actual Bytes Read:    21357.42Mib
+    Total Time Reading:   66.02s
   Asyncio:
     N/A
 
@@ -99,16 +147,28 @@ Pipeline Tests
 Profiling Info
   Bytes Per Chunk             4096 B
   Target Byte Rate            237.30 MiB/s
-  Target Bytes Read           7119.14MiB
-  Calculated Read Time        30.00s
+  Target Bytes Read           14238.28MiB
+  Calculated Read Time        60.00s
 
 Pipeline Tests
   Blocking:
-    Actual Bytes Read:    7119.14Mib
-    Total Time Reading:   26.90s
+    Actual Bytes Read:    14238.28Mib
+    Total Time Reading:   22.97s
   Non-Blocking:
-    Actual Bytes Read:    7119.14Mib
-    Total Time Reading:   21.29s
+    Actual Bytes Read:    14238.28Mib
+    Total Time Reading:   13.84s
+  Asyncio:
+    N/A
+
+
+
+Unix Socket Tests
+  Blocking:
+    Actual Bytes Read:    14238.28Mib
+    Total Time Reading:   53.14s
+  Non-Blocking:
+    Actual Bytes Read:    14238.28Mib
+    Total Time Reading:   43.83s
   Asyncio:
     N/A
 
@@ -120,16 +180,28 @@ Pipeline Tests
 Profiling Info
   Bytes Per Chunk             4096 B
   Target Byte Rate            118.65 MiB/s
-  Target Bytes Read           3559.57MiB
-  Calculated Read Time        30.00s
+  Target Bytes Read           7119.14MiB
+  Calculated Read Time        60.00s
 
 Pipeline Tests
   Blocking:
-    Actual Bytes Read:    3559.57Mib
-    Total Time Reading:   13.06s
+    Actual Bytes Read:    7119.14Mib
+    Total Time Reading:   13.12s
   Non-Blocking:
-    Actual Bytes Read:    3559.57Mib
-    Total Time Reading:   11.37s
+    Actual Bytes Read:    7119.14Mib
+    Total Time Reading:   7.72s
+  Asyncio:
+    N/A
+
+
+
+Unix Socket Tests
+  Blocking:
+    Actual Bytes Read:    7119.14Mib
+    Total Time Reading:   27.33s
+  Non-Blocking:
+    Actual Bytes Read:    7119.14Mib
+    Total Time Reading:   22.44s
   Asyncio:
     N/A
 
@@ -141,16 +213,28 @@ Pipeline Tests
 Profiling Info
   Bytes Per Chunk             4096 B
   Target Byte Rate            23.73 MiB/s
-  Target Bytes Read           711.91MiB
-  Calculated Read Time        30.00s
+  Target Bytes Read           1423.83MiB
+  Calculated Read Time        60.00s
 
 Pipeline Tests
   Blocking:
-    Actual Bytes Read:    711.91Mib
-    Total Time Reading:   2.88s
+    Actual Bytes Read:    1423.83Mib
+    Total Time Reading:   2.58s
   Non-Blocking:
-    Actual Bytes Read:    711.91Mib
-    Total Time Reading:   2.10s
+    Actual Bytes Read:    1423.83Mib
+    Total Time Reading:   1.43s
+  Asyncio:
+    N/A
+
+
+
+Unix Socket Tests
+  Blocking:
+    Actual Bytes Read:    1423.83Mib
+    Total Time Reading:   5.64s
+  Non-Blocking:
+    Actual Bytes Read:    1423.83Mib
+    Total Time Reading:   4.38s
   Asyncio:
     N/A
 
