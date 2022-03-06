@@ -1,182 +1,175 @@
-
-### Producer Results @ 29.97 FPS (unfiltered)
-
-
-
-Video Info
-  Video Resolution: 3840x2160p
-  Video FPS: 29.97
-  Frame Byte size: 24.88MB
-  Estimated Byte Rate: 745.75MB/s
-  Estimated Total Byte Size: 5697.53MB
-  Ideal Processing Time: 7.64s
-
-
-Timing asyncio.StreamReader.read()...
-  Byte Size: 5698.25 MB
-  Total Time: 27.33 s
-  Byte Rate: 208.51 MB/s
-
-
-Timing io.BufferedReader.read()...
-  Byte Size: 5698.25 MB
-  Total Time: 12.29 s
-  Byte Rate: 463.66 MB/s
-
-
-
-### Producer Results @ 25.00 FPS
-
-
+#################################################
+### Producer Results @ 29.97 FPS (unfiltered) ###
+#################################################
 
 Video Info
-  Video Resolution: 3840x2160p
-  Video FPS: 25.00
-  Frame Byte size: 24.88MB
-  Estimated Byte Rate: 622.08MB/s
-  Estimated Total Byte Size: 4752.69MB
-  Ideal Processing Time: 7.64s
+  Video Resolution            3840x2160p
+  Video FPS                   29.97
+  Frame Byte size             24.88MB
+  Estimated Byte Rate         745.75MB/s
+  Estimated Total Byte Size   5697.53MB
+  Ideal Processing Time       7.64s
 
-
-Timing asyncio.StreamReader.read()...
-  Byte Size: 4752.69 MB
-  Total Time: 22.82 s
-  Byte Rate: 208.26 MB/s
-
+Timing asyncio.StreamReader[_UnixReadPipeTransport].read()...
+  Byte Size:          5698.25 MB
+  Total Time:         29.75 s
+  Byte Rate:          191.51 MB/s
+  Byte Rate Scale:    26%
 
 Timing io.BufferedReader.read()...
-  Byte Size: 4752.69 MB
-  Total Time: 10.15 s
-  Byte Rate: 468.24 MB/s
+  Byte Size:          5698.25 MB
+  Total Time:         13.21 s
+  Byte Rate:          431.32 MB/s
+  Byte Rate Scale:    58%
 
 
-
-### Producer Results @ 20.00 FPS
-
-
+####################################
+### Producer Results @ 25.00 FPS ###
+####################################
 
 Video Info
-  Video Resolution: 3840x2160p
-  Video FPS: 20.00
-  Frame Byte size: 24.88MB
-  Estimated Byte Rate: 497.66MB/s
-  Estimated Total Byte Size: 3802.15MB
-  Ideal Processing Time: 7.64s
+  Video Resolution            3840x2160p
+  Video FPS                   25.00
+  Frame Byte size             24.88MB
+  Estimated Byte Rate         622.08MB/s
+  Estimated Total Byte Size   4752.69MB
+  Ideal Processing Time       7.64s
 
-
-Timing asyncio.StreamReader.read()...
-  Byte Size: 3807.13 MB
-  Total Time: 18.43 s
-  Byte Rate: 206.56 MB/s
-
+Timing asyncio.StreamReader[_UnixReadPipeTransport].read()...
+  Byte Size:          4752.69 MB
+  Total Time:         25.03 s
+  Byte Rate:          189.85 MB/s
+  Byte Rate Scale:    31%
 
 Timing io.BufferedReader.read()...
-  Byte Size: 3807.13 MB
-  Total Time: 7.99 s
-  Byte Rate: 476.59 MB/s
+  Byte Size:          4752.69 MB
+  Total Time:         10.47 s
+  Byte Rate:          454.04 MB/s
+  Byte Rate Scale:    73%
 
 
-
-### Producer Results @ 15.00 FPS
-
-
+####################################
+### Producer Results @ 20.00 FPS ###
+####################################
 
 Video Info
-  Video Resolution: 3840x2160p
-  Video FPS: 15.00
-  Frame Byte size: 24.88MB
-  Estimated Byte Rate: 373.25MB/s
-  Estimated Total Byte Size: 2851.61MB
-  Ideal Processing Time: 7.64s
+  Video Resolution            3840x2160p
+  Video FPS                   20.00
+  Frame Byte size             24.88MB
+  Estimated Byte Rate         497.66MB/s
+  Estimated Total Byte Size   3802.15MB
+  Ideal Processing Time       7.64s
 
-
-Timing asyncio.StreamReader.read()...
-  Byte Size: 2861.57 MB
-  Total Time: 14.00 s
-  Byte Rate: 204.42 MB/s
-
+Timing asyncio.StreamReader[_UnixReadPipeTransport].read()...
+  Byte Size:          3807.13 MB
+  Total Time:         19.02 s
+  Byte Rate:          200.19 MB/s
+  Byte Rate Scale:    40%
 
 Timing io.BufferedReader.read()...
-  Byte Size: 2861.57 MB
-  Total Time: 7.98 s
-  Byte Rate: 358.52 MB/s
+  Byte Size:          3807.13 MB
+  Total Time:         9.72 s
+  Byte Rate:          391.77 MB/s
+  Byte Rate Scale:    79%
 
 
-
-### Producer Results @ 10.00 FPS
-
-
+####################################
+### Producer Results @ 15.00 FPS ###
+####################################
 
 Video Info
-  Video Resolution: 3840x2160p
-  Video FPS: 10.00
-  Frame Byte size: 24.88MB
-  Estimated Byte Rate: 248.83MB/s
-  Estimated Total Byte Size: 1901.08MB
-  Ideal Processing Time: 7.64s
+  Video Resolution            3840x2160p
+  Video FPS                   15.00
+  Frame Byte size             24.88MB
+  Estimated Byte Rate         373.25MB/s
+  Estimated Total Byte Size   2851.61MB
+  Ideal Processing Time       7.64s
 
-
-Timing asyncio.StreamReader.read()...
-  Byte Size: 1891.12 MB
-  Total Time: 9.39 s
-  Byte Rate: 201.45 MB/s
-
+Timing asyncio.StreamReader[_UnixReadPipeTransport].read()...
+  Byte Size:          2861.57 MB
+  Total Time:         14.30 s
+  Byte Rate:          200.13 MB/s
+  Byte Rate Scale:    54%
 
 Timing io.BufferedReader.read()...
-  Byte Size: 1891.12 MB
-  Total Time: 7.80 s
-  Byte Rate: 242.46 MB/s
+  Byte Size:          2861.57 MB
+  Total Time:         7.90 s
+  Byte Rate:          362.12 MB/s
+  Byte Rate Scale:    97%
 
 
-
-### Producer Results @ 5.00 FPS
-
-
+####################################
+### Producer Results @ 10.00 FPS ###
+####################################
 
 Video Info
-  Video Resolution: 3840x2160p
-  Video FPS: 5.00
-  Frame Byte size: 24.88MB
-  Estimated Byte Rate: 124.42MB/s
-  Estimated Total Byte Size: 950.54MB
-  Ideal Processing Time: 7.64s
+  Video Resolution            3840x2160p
+  Video FPS                   10.00
+  Frame Byte size             24.88MB
+  Estimated Byte Rate         248.83MB/s
+  Estimated Total Byte Size   1901.08MB
+  Ideal Processing Time       7.64s
 
-
-Timing asyncio.StreamReader.read()...
-  Byte Size: 945.56 MB
-  Total Time: 8.39 s
-  Byte Rate: 112.65 MB/s
-
+Timing asyncio.StreamReader[_UnixReadPipeTransport].read()...
+  Byte Size:          1891.12 MB
+  Total Time:         11.07 s
+  Byte Rate:          170.85 MB/s
+  Byte Rate Scale:    69%
 
 Timing io.BufferedReader.read()...
-  Byte Size: 945.56 MB
-  Total Time: 7.78 s
-  Byte Rate: 121.60 MB/s
+  Byte Size:          1891.12 MB
+  Total Time:         7.91 s
+  Byte Rate:          239.20 MB/s
+  Byte Rate Scale:    96%
 
 
-
-### Producer Results @ 1.00 FPS
-
-
+###################################
+### Producer Results @ 5.00 FPS ###
+###################################
 
 Video Info
-  Video Resolution: 3840x2160p
-  Video FPS: 1.00
-  Frame Byte size: 24.88MB
-  Estimated Byte Rate: 24.88MB/s
-  Estimated Total Byte Size: 190.11MB
-  Ideal Processing Time: 7.64s
+  Video Resolution            3840x2160p
+  Video FPS                   5.00
+  Frame Byte size             24.88MB
+  Estimated Byte Rate         124.42MB/s
+  Estimated Total Byte Size   950.54MB
+  Ideal Processing Time       7.64s
 
-
-Timing asyncio.StreamReader.read()...
-  Byte Size: 199.07 MB
-  Total Time: 7.96 s
-  Byte Rate: 25.02 MB/s
-
+Timing asyncio.StreamReader[_UnixReadPipeTransport].read()...
+  Byte Size:          945.56 MB
+  Total Time:         8.43 s
+  Byte Rate:          112.19 MB/s
+  Byte Rate Scale:    90%
 
 Timing io.BufferedReader.read()...
-  Byte Size: 199.07 MB
-  Total Time: 7.78 s
-  Byte Rate: 25.59 MB/s
+  Byte Size:          945.56 MB
+  Total Time:         7.78 s
+  Byte Rate:          121.47 MB/s
+  Byte Rate Scale:    98%
+
+
+###################################
+### Producer Results @ 1.00 FPS ###
+###################################
+
+Video Info
+  Video Resolution            3840x2160p
+  Video FPS                   1.00
+  Frame Byte size             24.88MB
+  Estimated Byte Rate         24.88MB/s
+  Estimated Total Byte Size   190.11MB
+  Ideal Processing Time       7.64s
+
+Timing asyncio.StreamReader[_UnixReadPipeTransport].read()...
+  Byte Size:          199.07 MB
+  Total Time:         8.01 s
+  Byte Rate:          24.86 MB/s
+  Byte Rate Scale:    100%
+
+Timing io.BufferedReader.read()...
+  Byte Size:          199.07 MB
+  Total Time:         7.83 s
+  Byte Rate:          25.44 MB/s
+  Byte Rate Scale:    102%
 
 
