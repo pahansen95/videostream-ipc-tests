@@ -115,21 +115,22 @@ def probe_video_for_info(
 
 async def time_it_unfiltered(
   input_video: str,
+  target_rate: float,
 ):
   _buffer = b''
   ffmpeg_proc, ffmpeg_args = await create_ffmpeg_async_proc(input_video)
   stream = ffmpeg_proc.stdout
   log(
-    f"Timing asyncio.{type(stream).__name__}.read()...",
+    f"\nTiming asyncio.{type(stream).__name__}[{type(stream._transport).__name__}].read()...",
   )
   start_time = time.monotonic_ns()
   _buffer = await stream.read(-1)
   end_time = time.monotonic_ns()
   log(
-    f"  Byte Size: {len(_buffer) * 1E-6:.2f} MB",
-    f"  Total Time: {(end_time - start_time) * 1E-9:.2f} s",
-    f"  Byte Rate: {(len(_buffer) * 1E-6) / ((end_time - start_time) * 1E-9):.2f} MB/s",
-    f"\n",
+    f"  Byte Size:          {len(_buffer) * 1E-6:.2f} MB",
+    f"  Total Time:         {(end_time - start_time) * 1E-9:.2f} s",
+    f"  Byte Rate:          {(len(_buffer) * 1E-6) / ((end_time - start_time) * 1E-9):.2f} MB/s",
+    f"  Byte Rate Scale:    {(len(_buffer) * 1E-6) / ((end_time - start_time) * 1E-9) / target_rate:.0%}",
   )
   if (await ffmpeg_proc.wait()) != 0:
     log(
@@ -141,16 +142,16 @@ async def time_it_unfiltered(
   ffmpeg_proc, ffmpeg_args = create_ffmpeg_proc(input_video)
   stream = ffmpeg_proc.stdout
   log(
-    f"Timing io.{type(stream).__name__}.read()...",
+    f"\nTiming io.{type(stream).__name__}.read()...",
   )
   start_time = time.monotonic_ns()
   _buffer = stream.read()
   end_time = time.monotonic_ns()
   log(
-    f"  Byte Size: {len(_buffer) * 1E-6:.2f} MB",
-    f"  Total Time: {(end_time - start_time) * 1E-9:.2f} s",
-    f"  Byte Rate: {(len(_buffer) * 1E-6) / ((end_time - start_time) * 1E-9):.2f} MB/s",
-    f"\n",
+    f"  Byte Size:          {len(_buffer) * 1E-6:.2f} MB",
+    f"  Total Time:         {(end_time - start_time) * 1E-9:.2f} s",
+    f"  Byte Rate:          {(len(_buffer) * 1E-6) / ((end_time - start_time) * 1E-9):.2f} MB/s",
+    f"  Byte Rate Scale:    {(len(_buffer) * 1E-6) / ((end_time - start_time) * 1E-9) / target_rate:.0%}",
   )
   if ffmpeg_proc.wait() != 0:
     log(
@@ -162,6 +163,7 @@ async def time_it_unfiltered(
 async def time_it_filtered(
   input_video: str,
   fps: int,
+  target_rate: float,
 ):
   # https://ffmpeg.org/ffmpeg-filters.html#fps-1
   fps_ffmpeg_filter=f"fps=fps={fps}"
@@ -172,16 +174,16 @@ async def time_it_filtered(
   )
   stream = ffmpeg_proc.stdout
   log(
-    f"Timing asyncio.{type(stream).__name__}.read()...",
+    f"\nTiming asyncio.{type(stream).__name__}[{type(stream._transport).__name__}].read()...",
   )
   start_time = time.monotonic_ns()
   _buffer = await stream.read(-1)
   end_time = time.monotonic_ns()
   log(
-    f"  Byte Size: {len(_buffer) * 1E-6:.2f} MB",
-    f"  Total Time: {(end_time - start_time) * 1E-9:.2f} s",
-    f"  Byte Rate: {(len(_buffer) * 1E-6) / ((end_time - start_time) * 1E-9):.2f} MB/s",
-    f"\n",
+    f"  Byte Size:          {len(_buffer) * 1E-6:.2f} MB",
+    f"  Total Time:         {(end_time - start_time) * 1E-9:.2f} s",
+    f"  Byte Rate:          {(len(_buffer) * 1E-6) / ((end_time - start_time) * 1E-9):.2f} MB/s",
+    f"  Byte Rate Scale:    {(len(_buffer) * 1E-6) / ((end_time - start_time) * 1E-9) / target_rate:.0%}",
   )
   if (await ffmpeg_proc.wait()) != 0:
     log(
@@ -196,16 +198,16 @@ async def time_it_filtered(
   )
   stream = ffmpeg_proc.stdout
   log(
-    f"Timing io.{type(stream).__name__}.read()...",
+    f"\nTiming io.{type(stream).__name__}.read()...",
   )
   start_time = time.monotonic_ns()
   _buffer = stream.read()
   end_time = time.monotonic_ns()
   log(
-    f"  Byte Size: {len(_buffer) * 1E-6:.2f} MB",
-    f"  Total Time: {(end_time - start_time) * 1E-9:.2f} s",
-    f"  Byte Rate: {(len(_buffer) * 1E-6) / ((end_time - start_time) * 1E-9):.2f} MB/s",
-    f"\n",
+    f"  Byte Size:          {len(_buffer) * 1E-6:.2f} MB",
+    f"  Total Time:         {(end_time - start_time) * 1E-9:.2f} s",
+    f"  Byte Rate:          {(len(_buffer) * 1E-6) / ((end_time - start_time) * 1E-9):.2f} MB/s",
+    f"  Byte Rate Scale:    {(len(_buffer) * 1E-6) / ((end_time - start_time) * 1E-9) / target_rate:.0%}",
   )
   if ffmpeg_proc.wait() != 0:
     log(
@@ -232,25 +234,26 @@ async def main(
   ### Run Benchmarks ###
 
   ## Unfiltered
+  header = f"### Producer Results @ {fps:.2f} FPS (unfiltered) ###"
   log(
-    "".join(["#" for _ in range(shutil.get_terminal_size().columns)]),
-    f"### Producer Results @ {fps:.2f} FPS (unfiltered)",
-    "".join(["#" for _ in range(shutil.get_terminal_size().columns)]),
-    "\n",
+    "".join(["#" for _ in range(len(header))]),
+    header,
+    "".join(["#" for _ in range(len(header))]),
   )
   log(
-    f"Video Info",
-    f"  Video Resolution: {resolution[0]}x{resolution[1]}p",
-    f"  Video FPS: {fps:.2f}",
-    f"  Frame Byte size: {math.prod([3, *resolution]) * 1E-6:.2f}MB",
-    f"  Estimated Byte Rate: {math.prod([3, *resolution]) * 1E-6 * fps:.2f}MB/s",
-    f"  Estimated Total Byte Size: {duration * math.prod([3, *resolution]) * 1E-6 * fps:.2f}MB",
-    f"  Ideal Processing Time: {duration:.2f}s",
-    f"\n",
+    f"\nVideo Info",
+    f"  Video Resolution            {resolution[0]}x{resolution[1]}p",
+    f"  Video FPS                   {fps:.2f}",
+    f"  Frame Byte size             {math.prod([3, *resolution]) * 1E-6:.2f}MB",
+    f"  Estimated Byte Rate         {math.prod([3, *resolution]) * 1E-6 * fps:.2f}MB/s",
+    f"  Estimated Total Byte Size   {duration * math.prod([3, *resolution]) * 1E-6 * fps:.2f}MB",
+    f"  Ideal Processing Time       {duration:.2f}s",
   )
   await time_it_unfiltered(
-    input_video
+    input_video,
+    (math.prod([3, *resolution]) * 1E-6 * fps)
   )
+  log("\n")
 
   for target_fps in sorted(set(all_target_fps), reverse=True):
     ## Filtered
@@ -259,27 +262,29 @@ async def main(
       continue
     else:
       fps = target_fps
+
+    header = f"### Producer Results @ {fps:.2f} FPS ###"
     log(
-      "".join(["#" for _ in range(shutil.get_terminal_size().columns)]),
-      f"### Producer Results @ {fps:.2f} FPS",
-      "".join(["#" for _ in range(shutil.get_terminal_size().columns)]),
-      "\n",
+      "".join(["#" for _ in range(len(header))]),
+      header,
+      "".join(["#" for _ in range(len(header))]),
     )
     log(
-      f"Video Info",
-      f"  Video Resolution: {resolution[0]}x{resolution[1]}p",
-      f"  Video FPS: {fps:.2f}",
-      f"  Frame Byte size: {math.prod([3, *resolution]) * 1E-6:.2f}MB",
-      f"  Estimated Byte Rate: {math.prod([3, *resolution]) * 1E-6 * fps:.2f}MB/s",
-      f"  Estimated Total Byte Size: {duration * math.prod([3, *resolution]) * 1E-6 * fps:.2f}MB",
-      f"  Ideal Processing Time: {duration:.2f}s",
-      f"\n",
+      f"\nVideo Info",
+      f"  Video Resolution            {resolution[0]}x{resolution[1]}p",
+      f"  Video FPS                   {fps:.2f}",
+      f"  Frame Byte size             {math.prod([3, *resolution]) * 1E-6:.2f}MB",
+      f"  Estimated Byte Rate         {math.prod([3, *resolution]) * 1E-6 * fps:.2f}MB/s",
+      f"  Estimated Total Byte Size   {duration * math.prod([3, *resolution]) * 1E-6 * fps:.2f}MB",
+      f"  Ideal Processing Time       {duration:.2f}s",
     )
 
     await time_it_filtered(
       input_video,
-      fps
+      fps,
+      (math.prod([3, *resolution]) * 1E-6 * fps)
     )
+    log("\n")
 
 if __name__ == "__main__":
   asyncio.run(
