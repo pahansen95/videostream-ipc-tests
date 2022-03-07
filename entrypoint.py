@@ -351,11 +351,16 @@ async def time_it_generic(
     
     if ffmpeg_proc.poll() is None:
       ffmpeg_proc.terminate()
-      ffmpeg_proc.wait()
-    try:
-      assert not ffmpeg_proc.poll(), f"{ffmpeg_proc.returncode}"
-    except:
-      log(ffmpeg_proc.stderr.read().decode())
+      try:
+        ffmpeg_proc.wait(timeout=5)
+        try:
+          assert not ffmpeg_proc.poll(), f"{ffmpeg_proc.returncode}"
+        except:
+          log(ffmpeg_proc.stderr.read().decode())
+      except subprocess.TimeoutExpired:
+        ffmpeg_proc.kill()
+        ffmpeg_proc.wait()
+        log(ffmpeg_proc.stderr.read().decode())
 
     close_it()
 
@@ -463,11 +468,16 @@ async def time_it_generic(
 
     if ffmpeg_proc.poll() is None:
       ffmpeg_proc.terminate()
-      ffmpeg_proc.wait()
-    try:
-      assert not ffmpeg_proc.poll(), f"{ffmpeg_proc.returncode}"
-    except:
-      log(ffmpeg_proc.stderr.read().decode())
+      try:
+        ffmpeg_proc.wait(timeout=5)
+        try:
+          assert not ffmpeg_proc.poll(), f"{ffmpeg_proc.returncode}"
+        except:
+          log(ffmpeg_proc.stderr.read().decode())
+      except subprocess.TimeoutExpired:
+        ffmpeg_proc.kill()
+        ffmpeg_proc.wait()
+        log(ffmpeg_proc.stderr.read().decode())
 
     close_it()
 
@@ -506,6 +516,12 @@ async def main(
   _num, _denom = video_info["r_frame_rate"].split("/")
   fps = float(_num) / float(_denom)
   log(fps)
+  """
+  Note to self...
+  - (Given this use case)
+    - Unix Sockets favor larger chunk sizes
+    - POSIX Pipelines favor smaller chunk sizes
+  """
   chunk_size = 2**12 # 4096 Bytes (4KiB)
   log(chunk_size)
 
@@ -538,7 +554,7 @@ async def main(
   p_stdout(
     f"\nVideo Info",
     f"  Video Resolution            {resolution[0]}x{resolution[1]}p",
-    f"  Video FPS                   {fps:.2f}",
+    f"  Video FPS                   {fps:.2f} fps",
     f"  Frame Byte Size             {frame_byte_size / 2**20:.2f} MiB",
     f"\n",
   )
@@ -565,13 +581,14 @@ async def main(
     )
     p_stdout(
       f"\nProfiling Info",
-      f"  Bytes Per Chunk             {chunk_size} B",
+      f"  Bytes Per Chunk             {chunk_size} Bytes",
       f"  Target Byte Rate            {target_byte_rate / 2**20:.2f} MiB/s",
-      f"  Target Bytes Read           {total_byte_size / 2**20:.2f}MiB",
-      f"  Calculated Read Time        {real_duration:.2f}s",
+      f"  Target Bytes Read           {total_byte_size / 2**20:.2f} MiB",
+      f"  Streaming Duration          {real_duration:.2f}s",
+      f"\n",
     )
     p_stdout(
-      "\nPipeline Tests"
+      "Pipeline Tests"
     )
     results["pipeline"] = await time_it_generic(
       input_video,
@@ -583,17 +600,17 @@ async def main(
 
     p_stdout(
       "  Blocking:",
-      f"    Actual Bytes Read:    {results['pipeline']['blocking']['bytes_read'] / 2**20:.2f}Mib",
-      f"    Total Time Reading:   {results['pipeline']['blocking']['reading_time'] / 1E9:.2f}s",
+      f"    Actual Bytes Read:    {results['pipeline']['blocking']['bytes_read'] / 2**20:.2f} Mib",
+      f"    Total Time Reading:   {results['pipeline']['blocking']['reading_time'] / 1E9:.2f} s",
       "  Non-Blocking:",
-      f"    Actual Bytes Read:    {results['pipeline']['non-blocking']['bytes_read'] / 2**20:.2f}Mib",
-      f"    Total Time Reading:   {results['pipeline']['non-blocking']['reading_time'] / 1E9:.2f}s",
+      f"    Actual Bytes Read:    {results['pipeline']['non-blocking']['bytes_read'] / 2**20:.2f} Mib",
+      f"    Total Time Reading:   {results['pipeline']['non-blocking']['reading_time'] / 1E9:.2f} s",
       "  Asyncio:",
       "    N/A",
       "\n",
     )
     p_stdout(
-      "\nUnix Socket Tests"
+      "Unix Socket Tests"
     )
     results["unix_socket"] = await time_it_generic(
       input_video,
@@ -605,11 +622,11 @@ async def main(
 
     p_stdout(
       "  Blocking:",
-      f"    Actual Bytes Read:    {results['unix_socket']['blocking']['bytes_read'] / 2**20:.2f}Mib",
-      f"    Total Time Reading:   {results['unix_socket']['blocking']['reading_time'] / 1E9:.2f}s",
+      f"    Actual Bytes Read:    {results['unix_socket']['blocking']['bytes_read'] / 2**20:.2f} Mib",
+      f"    Total Time Reading:   {results['unix_socket']['blocking']['reading_time'] / 1E9:.2f} s",
       "  Non-Blocking:",
-      f"    Actual Bytes Read:    {results['unix_socket']['non-blocking']['bytes_read'] / 2**20:.2f}Mib",
-      f"    Total Time Reading:   {results['unix_socket']['non-blocking']['reading_time'] / 1E9:.2f}s",
+      f"    Actual Bytes Read:    {results['unix_socket']['non-blocking']['bytes_read'] / 2**20:.2f} Mib",
+      f"    Total Time Reading:   {results['unix_socket']['non-blocking']['reading_time'] / 1E9:.2f} s",
       "  Asyncio:",
       "    N/A",
       "\n",
